@@ -1,5 +1,5 @@
 provider "aws" {
-  region = var.region   #"us-east-1"
+  region = var.region #"us-east-1"
 }
 
 # add the following, else there is plugin load error
@@ -7,13 +7,13 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"  # or another stable version
+      version = "~> 5.0" # or another stable version
     }
   }
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "${local.name_prefix}cap-eks-terraform-state"
+  bucket        = "${local.name_prefix}cap-eks-terraform-state"
   force_destroy = true
 
   versioning {
@@ -30,7 +30,7 @@ resource "aws_s3_bucket" "terraform_state" {
 
   tags = {
     Name        = "${local.name_prefix}cap-eks-terraform-state"
-    Environment = var.env   #"dev"
+    Environment = var.env #"dev"
   }
 }
 
@@ -46,6 +46,6 @@ resource "aws_dynamodb_table" "terraform_locks" {
 
   tags = {
     Name        = "${local.name_prefix}cap-eks-terraform-locks"
-    Environment = var.env   #"dev"
+    Environment = var.env #"dev"
   }
 }
