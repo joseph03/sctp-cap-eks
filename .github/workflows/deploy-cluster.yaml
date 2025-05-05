@@ -85,7 +85,8 @@ jobs:
       # -raw cluster_name joseph03-eks-cluster::debug::Terraform exited with code 0.
       - name: Set CLUSTER_NAME from Terraform output
         run: |
-          OUTPUT=$(terraform output -raw cluster_name 2>&1)
+          OUTPUT=$(terraform output cluster_name 2>/dev/null | tr -d '"')
+          echo "raw cluster_name is $CLUSTER_NAME"
           CLUSTER_NAME=$(echo "$OUTPUT" | grep -E '^[a-zA-Z0-9._-]+$' | head -n1)
 
           if [ -z "$CLUSTER_NAME" ]; then
