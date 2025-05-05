@@ -80,9 +80,10 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         run: terraform apply -auto-approve tfplan.out
 
-      - name: Get EKS Cluster Name from Terraform
+      - name: Set CLUSTER_NAME
         run: |
-          echo "CLUSTER_NAME=$(terraform output -raw cluster_name)" >> "$GITHUB_ENV"
+          CLUSTER_NAME=$(terraform output -raw cluster_name | grep -E '^[a-zA-Z0-9._-]+$')
+          echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
 
       - name: Update kubeconfig
         run: |
