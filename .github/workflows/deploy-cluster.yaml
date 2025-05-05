@@ -80,18 +80,22 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         run: terraform apply -auto-approve tfplan.out
 
+      # eg of cluster_name extracteed
+      # raw cluster_name is [command]/home/runner/work/_temp/8447ad54-0a69-43cd-aead-c341c9cf1427/terraform-bin output 
+      # -raw cluster_name joseph03-eks-cluster::debug::Terraform exited with code 0.
       - name: Set CLUSTER_NAME from Terraform output
         run: |
-          CLUSTER_NAME=$(terraform output -raw cluster_name 2>/dev/null)
-          echo "raw cluster_name is $CLUSTER_NAME" 
+          OUTPUT=$(terraform output -raw cluster_name 2>&1)
+          CLUSTER_NAME=$(echo "$OUTPUT" | grep -E '^[a-zA-Z0-9._-]+$' | head -n1)
 
           if [ -z "$CLUSTER_NAME" ]; then
-            echo "ERROR: Failed to get cluster name from Terraform" >&2
+            echo "ERROR: Failed to extract clean cluster name" >&2
             exit 1
           fi
 
           echo "Extracted CLUSTER_NAME=$CLUSTER_NAME"
           echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
+
 
 
       - name: Update kubeconfig
