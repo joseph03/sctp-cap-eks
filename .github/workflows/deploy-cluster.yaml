@@ -1,4 +1,4 @@
-name: Deploy EKS and Create Namespace
+name: Deploy EKS Cluster and Create Namespace
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  terraform:
+  ClusterNamespace:
     runs-on: ubuntu-latest
 
     steps:
@@ -82,13 +82,8 @@ jobs:
 
       - name: Set CLUSTER_NAME
         run: |
-          OUTPUT=$(terraform output -raw cluster_name 2>&1 | grep -E '^[a-zA-Z0-9._-]+$' || true)
-          if [ -n "$OUTPUT" ]; then
-            CLUSTER_NAME=$OUTPUT
-          else
-            echo "ERROR: Failed to extract clean cluster name" >&2
-            exit 1
-          fi
+          OUTPUT=$(terraform output -raw cluster_name 2>&1 | tail -n 1)
+          CLUSTER_NAME=$OUTPUT
           echo "CLUSTER_NAME=$CLUSTER_NAME"
           echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
 
