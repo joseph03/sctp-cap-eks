@@ -82,7 +82,12 @@ jobs:
 
       - name: Set CLUSTER_NAME
         run: |
-          CLUSTER_NAME=$(terraform output -raw cluster_name | grep -E '^[a-zA-Z0-9._-]+$')
+          OUTPUT=$(terraform output -raw cluster_name 2>/dev/null)
+          if echo "$OUTPUT" | grep -qE '^[a-zA-Z0-9._-]+$'; then
+            CLUSTER_NAME=$OUTPUT
+          else
+            CLUSTER_NAME=""
+          fi
           echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
 
       - name: Update kubeconfig
