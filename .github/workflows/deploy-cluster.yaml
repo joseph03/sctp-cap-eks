@@ -59,9 +59,9 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Init
-        run: terraform init -backend-config="region=us-east-1"
-         -backend-config="dynamodb_table=joseph03-cap-eks-terraform-locks" -backend-config="encrypt=true"
+      # - name: Terraform Init
+      #   run: terraform init -backend-config="region=us-east-1"
+      #    -backend-config="dynamodb_table=joseph03-cap-eks-terraform-locks" -backend-config="encrypt=true"
 
       # Check formatting
       - name: Terraform Format Check
