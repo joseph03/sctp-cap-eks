@@ -1,0 +1,88 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 04-external-dns
+  pull_request:
+    branches:
+      - main
+      - 04-external-dns
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Check Terraform Format
+        run: terraform fmt -check -recursive
+
+      - name: Validate Terraform (bootstrap)
+        working-directory: ./bootstrap
+        run: terraform validate
+
+      - name: Terraform Init (bootstrap)
+        working-directory: ./bootstrap
+        run: terraform init
+
+      - name: Terraform Plan (bootstrap)
+        id: bootstrap_plan
+        working-directory: ./bootstrap
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply (bootstrap)
+        working-directory: ./bootstrap
+        run: terraform apply -auto-approve tfplan
+
+      - name: Validate Terraform (root)
+        run: terraform validate
+
+      - name: Terraform Init (root)
+        run: terraform init
+
+      - name: Terraform Plan with Target (VPC & EKS)
+        id: targeted_plan
+        run: terraform plan -out=tfplan -target=module.vpc -target=module.eks
+
+      - name: Terraform Apply Targeted Plan
+        run: terraform apply -auto-approve tfplan
+
+      - name: Terraform Full Plan
+        id: full_plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply Full Plan
+        run: terraform apply -auto-approve tfplan
+
+      - name: Show Full Plan
+        id: show_plan
+        run: terraform show -no-color tfplan > plan_output.txt
+
+      - name: Comment Terraform Plan on PR
+        if: github.event_name == 'pull_request'
+        uses: mshick/add-pr-comment@v2
+        with:
+          message-path: plan_output.txt

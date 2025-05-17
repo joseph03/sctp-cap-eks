@@ -1,0 +1,150 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files, which are likely to contain sensitive data, such as
+# password, private keys, and other secrets. These should not be part of version 
+# control as they are data points which are potentially sensitive and subject 
+# to change depending on the environment.
+*.tfvars
+*.tfvars.json
+
+# Ignore override files as they are usually used to override resources locally and so
+# are not checked in
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore transient lock info files created by terraform apply
+.terraform.tfstate.lock.info
+
+# Include override files you do wish to add to version control using negated pattern
+# !example_override.tf
+
+# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
+# example: *tfplan*
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# 20250514 ignore terraform related files in bootstrap subfolder
+bootstrap/.terraform/
+bootstrap/*.tfstate
+bootstrap/*.tfstate.*
+bootstrap/*.tfvars
+bootstrap/*.tfvars.json
+bootstrap/*crash.log
+bootstrap/*.tfplan
+bootstrap/terraform.rc
+bootstrap/.terraformrc
+
+# 20250517
+.terraform.lock.hcl
+bootstrap/.terraform.lock.hcl
+bootstrap/Windows-SSD (C) - Shortcut.lnk
+helm-external-dns/external-dns/.helmignore
+helm-external-dns/external-dns/CHANGELOG.md
+helm-external-dns/external-dns/Chart.yaml
+helm-external-dns/external-dns/README.md
+helm-external-dns/external-dns/README.md.gotmpl
+helm-external-dns/external-dns/RELEASE.md
+helm-external-dns/external-dns/crds/dnsendpoint.yaml
+helm-external-dns/external-dns/templates/NOTES.txt
+helm-external-dns/external-dns/templates/_helpers.tpl
+helm-external-dns/external-dns/templates/clusterrole.yaml
+helm-external-dns/external-dns/templates/clusterrolebinding.yaml
+helm-external-dns/external-dns/templates/deployment.yaml
+helm-external-dns/external-dns/templates/service.yaml
+helm-external-dns/external-dns/templates/serviceaccount.yaml
+helm-external-dns/external-dns/templates/servicemonitor.yaml
+helm-external-dns/external-dns/values.schema.json
+helm-external-dns/external-dns/values.yaml
+
+# Ignore provider-mirror folder in bootstrap 
+bootstrap/provider-mirror/
+# end 20250514 ignore terraform related files in bootstrap subfolder
+
+
+# 20250512 kubectl, docker
+# Ignore kubectl config
+.kube/
+
+# Ignore build and public directories
+/build/
+/public/
+
+# Ignore node_modules (if working with Node.js)
+node_modules/
+
+# Ignore Docker image artifacts
+.docker/
+
+# Ignore temporary files
+tmp/
+.cache/
+# end 20250512
+
+#20250514 argocd
+# Kustomize build output (if used manually)
+kustomize.build.yaml
+
+# Helm
+*.tgz
+charts/
+Chart.lock
+
+# Kubernetes secrets (avoid committing raw secrets)
+**/*secret*.yaml
+**/secrets.yaml
+**/sealed-secrets.yaml
+
+# JSON/YAML schema caches or IDE metadata
+*.swp
+*.bak
+*.tmp
+*.orig
+*.DS_Store
+.vscode/
+.idea/
+
+# OS-generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Docker
+*.tar
+.dockerignore
+
+# Python (if using scripts or tools)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+
+# Node (if using JS-based tools)
+node_modules/
+
+# GitOps-related exclusions
+# Optional: Argo CD Application auto-generated status cache (if ever output to disk)
+.argocd/
+
+# Optional: GitHub workflows plan output
+plan_output.txt
+tfplan
+# end 20250514 argocd
