@@ -53,6 +53,10 @@ jobs:
       - name: Check Terraform Format (bootstrap-s3)
         working-directory: ./bootstrap-s3
         run: terraform fmt -check -recursive
+      
+      - name: Check Terraform Format (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        run: terraform fmt -check -recursive
 
 #================== bootstrap-s3 ==================
       - name: Terraform Init (bootstrap-s3)
