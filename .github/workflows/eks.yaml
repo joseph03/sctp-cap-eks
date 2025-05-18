@@ -60,7 +60,7 @@ jobs:
       - name: Check S3 bucket existence
         id: check_s3
         run: |
-          if aws s3api head-bucket --bucket "$var-s3-name" 2>/dev/null; then
+          if aws s3api head-bucket --bucket "${env-s3-name}" 2>/dev/null; then
             echo "s3_exists=true" >> $GITHUB_OUTPUT
           else
             echo "s3_exists=false" >> $GITHUB_OUTPUT
@@ -88,7 +88,7 @@ jobs:
       - name: Check DynamoDB table existence
         id: check_dynamodb
         run: |
-          if aws dynamodb describe-table --table-name "$var-dynamodb-name" 2>/dev/null; then
+          if aws dynamodb describe-table --table-name "${env-dynamodb-name}" 2>/dev/null; then
             echo "dynamodb_exists=true" >> $GITHUB_OUTPUT
           else
             echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
