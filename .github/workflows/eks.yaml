@@ -120,7 +120,9 @@ jobs:
       - name: Terraform Plan with Target (VPC & EKS)
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
+            -lock=false 
+            #-var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
+            # -var is not required because domain_name is defined in terraform.tfvars
             # "domain_name is required by module.external_dns in workflow
 
       - name: Terraform Apply Targeted Plan

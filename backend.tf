@@ -8,5 +8,3 @@ terraform {
     encrypt        = true
   }
 }
-#"grp-3${local.name_prefix}cap-eks-tfstate"
-#"grp-3${local.name_prefix}cap-eks-tf-locks"
