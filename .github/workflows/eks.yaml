@@ -12,9 +12,11 @@ on:
   workflow_dispatch:
 
 env:
-  env-s3-name: "grp-3joseph03-s3"                  # "grp-3${local.name_prefix}s3"
-  env-dynamodb-name: "grp-3joseph03-dynamodb"      # "grp-3${local.name_prefix}dynamodb"
+  # env variable name can only have _ and not -
+  ENV_S3_NAME: "grp-3joseph03-s3"                  # "grp-3${local.name_prefix}s3"
+  ENV_DYNAMODB_NAME: "grp-3joseph03-dynamodb"      # "grp-3${local.name_prefix}dynamodb"
 
+# remember to use different names for tfplan file in different stages
 jobs:
   terraform:
     name: Terraform Plan & Apply
@@ -60,7 +62,7 @@ jobs:
       - name: Check S3 bucket existence
         id: check_s3
         run: |
-          if aws s3api head-bucket --bucket "${env-s3-name}" 2>/dev/null; then
+          if aws s3api head-bucket --bucket "${ENV_S3_NAME}" 2>/dev/null; then
             echo "s3_exists=true" >> $GITHUB_OUTPUT
           else
             echo "s3_exists=false" >> $GITHUB_OUTPUT
@@ -69,12 +71,12 @@ jobs:
       - name: Terraform Plan (bootstrap-s3)
         working-directory: ./bootstrap-s3
         if: steps.check_s3.outputs.s3_exists == 'false' 
-        run: terraform plan -out=tfplan -var="s3_name=${env-s3-name}"
+        run: terraform plan -out=tfplan-s3 -var="s3_name=${ENV_S3_NAME}"
 
       - name: Terraform Apply (bootstrap-s3)
         working-directory: ./bootstrap-s3
         if: steps.check_s3.outputs.s3_exists == 'false' 
-        run: terraform apply tfplan
+        run: terraform apply tfplan-s3
 
 #==================== bootstrap-dynamodb ==================
       - name: Terraform Init (bootstrap-dynamodb)
@@ -88,7 +90,7 @@ jobs:
       - name: Check DynamoDB table existence
         id: check_dynamodb
         run: |
-          if aws dynamodb describe-table --table-name "${env-dynamodb-name}" 2>/dev/null; then
+          if aws dynamodb describe-table --table-name "${ENV_DYNAMODB_NAME}" 2>/dev/null; then
             echo "dynamodb_exists=true" >> $GITHUB_OUTPUT
           else
             echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
@@ -97,12 +99,12 @@ jobs:
       - name: Terraform Plan (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
         if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
-        run: terraform plan -out=tfplan -var="dynamodb_name=${env-dynamodb-name}"
+        run: terraform plan -out=tfplan-dyn -var="dynamodb_name=${ENV_DYNAMODB_NAME}"
 
       - name: Terraform Apply (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
         if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
-        run: terraform apply tfplan
+        run: terraform apply tfplan-dyn
 
 #================== vpc & eks ==================
       - name: Terraform Init (root)
@@ -113,22 +115,22 @@ jobs:
         
       - name: Terraform Plan with Target (VPC & EKS)
         id: targeted_plan
-        run: terraform plan -out=tfplan -target=module.vpc -target=module.eks
+        run: terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks
 
       - name: Terraform Apply Targeted Plan
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply tfplan-vpc-eks
 
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
         id: full_plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan-full
 
       - name: Terraform Apply Full Plan
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply tfplan-full
 
       - name: Show Full Plan
         id: show_plan
-        run: terraform show -no-color tfplan > plan_output.txt
+        run: terraform show -no-color tfplan-full > plan_output.txt
 
       - name: Comment Terraform Plan on PR
         if: github.event_name == 'pull_request'
