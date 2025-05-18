@@ -114,8 +114,10 @@ jobs:
         run: terraform validate
         
       - name: Terraform Plan with Target (VPC & EKS)
-        id: targeted_plan
-        run: terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks
+        run: |
+          terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
+            - var="domain_name=sctp-sandbox.com"   
+            # "domain_name is required by module.external_dns in workflow
 
       - name: Terraform Apply Targeted Plan
         run: terraform apply tfplan-vpc-eks
