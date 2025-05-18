@@ -61,12 +61,12 @@ jobs:
         working-directory: ./bootstrap
         run: terraform apply -auto-approve tfplan
 
-      - name: Validate Terraform (root)
-        run: terraform validate
-
       - name: Terraform Init (root)
         run: terraform init
 
+      - name: Validate Terraform (root)
+        run: terraform validate
+        
       - name: Terraform Plan with Target (VPC & EKS)
         id: targeted_plan
         run: terraform plan -out=tfplan -target=module.vpc -target=module.eks
