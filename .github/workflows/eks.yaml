@@ -17,6 +17,10 @@ env:
   ENV_DYNAMODB_NAME: "grp-3joseph03-dynamodb"      # "grp-3${local.name_prefix}dynamodb"
 
 # remember to use different names for tfplan file in different stages
+# cancel job may cause state lock
+# aws dynamodb delete-item \
+#  --table-name grp-3joseph03-dynamodb \
+#  --key '{"LockID":{"S":"grp-3joseph03-cap-eks-tfstate/cap-eks/terraform.tfstate"}}'
 jobs:
   eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
