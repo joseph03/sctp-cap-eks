@@ -1,27 +1,37 @@
-resource "aws_s3_bucket" "terraform_state" {
-  bucket        = "${local.name_prefix}cap-eks-terraform-state"
+resource "aws_s3_bucket" "tf_state" {
+  bucket        = "grp-3${local.name_prefix}cap-eks-tfstate"
   force_destroy = true
 
-  versioning {
-    enabled = true
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
   tags = {
-    Name        = "${local.name_prefix}cap-eks-terraform-state"
+    Name        = "grp-3${local.name_prefix}cap-eks-tfstate"
     Environment = var.env #"dev"
+  }
+
+  # versioning {
+  #   enabled = true
+  # }
+
+  # server_side_encryption_configuration {
+  #   rule {
+  #     apply_server_side_encryption_by_default {
+  #       sse_algorithm = "AES256"
+  #     }
+  #   }
+  # }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state" {
+  bucket = aws_s3_bucket.tf_state.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
   }
 }
 
-resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "${local.name_prefix}cap-eks-terraform-locks"
+resource "aws_dynamodb_table" "tf_locks" {
+  name         = "grp-3${local.name_prefix}cap-eks-tf-locks"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
@@ -31,7 +41,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
   }
 
   tags = {
-    Name        = "${local.name_prefix}cap-eks-terraform-locks"
+    Name        = "grp-3${local.name_prefix}cap-eks-tf-locks"
     Environment = var.env #"dev"
   }
 }
