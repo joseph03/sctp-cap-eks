@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - 04-external-dns
+      - 05-external-dns
   pull_request:
     branches:
       - main
-      - 04-external-dns
+      - 05-external-dns
   workflow_dispatch:
 
 jobs:
