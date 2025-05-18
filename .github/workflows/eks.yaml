@@ -11,6 +11,10 @@ on:
       - 05-external-dns
   workflow_dispatch:
 
+env:
+  env-s3-name: "grp-3joseph03-s3"                  # "grp-3${local.name_prefix}s3"
+  env-dynamodb-name: "grp-3joseph03-dynamodb"      # "grp-3${local.name_prefix}dynamodb"
+
 jobs:
   terraform:
     name: Terraform Plan & Apply
@@ -40,27 +44,67 @@ jobs:
       - name: Check Terraform Format
         run: terraform fmt -check -recursive
 
-      - name: Check Terraform Format (bootstrap)
-        working-directory: ./bootstrap
+      - name: Check Terraform Format (bootstrap-s3)
+        working-directory: ./bootstrap-s3
         run: terraform fmt -check -recursive
 
-      - name: Terraform Init (bootstrap)
-        working-directory: ./bootstrap
+#================== bootstrap-s3 ==================
+      - name: Terraform Init (bootstrap-s3)
+        working-directory: ./bootstrap-s3
         run: terraform init
 
-      - name: Validate Terraform (bootstrap)
-        working-directory: ./bootstrap
+      - name: Validate Terraform (bootstrap-s3)
+        working-directory: ./bootstrap-s3
         run: terraform validate
 
-      - name: Terraform Plan (bootstrap)
-        id: bootstrap_plan
-        working-directory: ./bootstrap
-        run: terraform plan -out=tfplan
+      - name: Check S3 bucket existence
+        id: check_s3
+        run: |
+          if aws s3api head-bucket --bucket "$var-s3-name" 2>/dev/null; then
+            echo "s3_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "s3_exists=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Terraform Apply (bootstrap)
-        working-directory: ./bootstrap
-        run: terraform apply -auto-approve tfplan
+      - name: Terraform Plan (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        if: steps.check_s3.outputs.s3_exists == 'false' 
+        run: terraform apply -out=tfplan -var="s3_name=$env-s3-name"
 
+      - name: Terraform Apply (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        if: steps.check_s3.outputs.s3_exists == 'false' 
+        run: terraform apply tfplan
+
+#==================== bootstrap-dynamodb ==================
+      - name: Terraform Init (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        run: terraform init
+
+      - name: Validate Terraform (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        run: terraform validate
+
+      - name: Check DynamoDB table existence
+        id: check_dynamodb
+        run: |
+          if aws dynamodb describe-table --table-name "$var-dynamodb-name" 2>/dev/null; then
+            echo "dynamodb_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Terraform Plan (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform apply -out=tfplan -var="dynamodb_name=$env-dynamodb-name"
+
+      - name: Terraform Apply (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform apply tfplan
+
+#================== vpc & eks ==================
       - name: Terraform Init (root)
         run: terraform init
 
@@ -74,6 +118,7 @@ jobs:
       - name: Terraform Apply Targeted Plan
         run: terraform apply -auto-approve tfplan
 
+#================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
         id: full_plan
         run: terraform plan -out=tfplan
