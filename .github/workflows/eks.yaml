@@ -13,8 +13,8 @@ on:
 
 env:
   # env variable name can only have _ and not -
-  ENV_S3_NAME: "grp-3joseph03-s3"                  # "grp-3${local.name_prefix}s3"
-  ENV_DYNAMODB_NAME: "grp-3joseph03-dynamodb"      # "grp-3${local.name_prefix}dynamodb"
+  ENV_S3_NAME: "grp-3joseph03-s3"                 
+  ENV_DYNAMODB_NAME: "grp-3joseph03-dynamodb"   
 
 # remember to use different names for tfplan file in different stages
 # cancel job may cause state lock
