@@ -40,13 +40,17 @@ jobs:
       - name: Check Terraform Format
         run: terraform fmt -check -recursive
 
-      - name: Validate Terraform (bootstrap)
+      - name: Check Terraform Format (bootstrap)
         working-directory: ./bootstrap
-        run: terraform validate
+        run: terraform fmt -check -recursive
 
       - name: Terraform Init (bootstrap)
         working-directory: ./bootstrap
         run: terraform init
+
+      - name: Validate Terraform (bootstrap)
+        working-directory: ./bootstrap
+        run: terraform validate
 
       - name: Terraform Plan (bootstrap)
         id: bootstrap_plan
