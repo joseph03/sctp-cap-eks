@@ -69,7 +69,7 @@ jobs:
       - name: Terraform Plan (bootstrap-s3)
         working-directory: ./bootstrap-s3
         if: steps.check_s3.outputs.s3_exists == 'false' 
-        run: terraform apply -out=tfplan -var="s3_name=${env-s3-name}"
+        run: terraform plan -out=tfplan -var="s3_name=${env-s3-name}"
 
       - name: Terraform Apply (bootstrap-s3)
         working-directory: ./bootstrap-s3
@@ -97,7 +97,7 @@ jobs:
       - name: Terraform Plan (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
         if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
-        run: terraform apply -out=tfplan -var="dynamodb_name=${env-dynamodb-name}"
+        run: terraform plan -out=tfplan -var="dynamodb_name=${env-dynamodb-name}"
 
       - name: Terraform Apply (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
