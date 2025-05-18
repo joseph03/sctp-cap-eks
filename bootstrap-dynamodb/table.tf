@@ -1,6 +1,6 @@
 
 resource "aws_dynamodb_table" "tf_locks" {
-  name         = coalesce(var.dynamodb_name, local.dynamodb_name) 
+  name         = coalesce(var.dynamodb_name, local.dynamodb_name)
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
@@ -10,7 +10,7 @@ resource "aws_dynamodb_table" "tf_locks" {
   }
 
   tags = {
-    Name        = coalesce(var.dynamodb_name, local.dynamodb_name) 
+    Name        = coalesce(var.dynamodb_name, local.dynamodb_name)
     Environment = var.env #"dev"
   }
 }
