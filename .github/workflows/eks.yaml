@@ -1,4 +1,4 @@
-name: Terraform CI/CD Pipeline
+name: Terraform CI/CD Foundation
 
 on:
   push:
@@ -18,7 +18,7 @@ env:
 
 # remember to use different names for tfplan file in different stages
 jobs:
-  terraform:
+  eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
     permissions:
