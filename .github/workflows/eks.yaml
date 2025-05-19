@@ -134,6 +134,7 @@ jobs:
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
             -var-file="$GITHUB_WORKSPACE/terraform.tfvars"
             #-var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
+            # vars.DOMAIN_NAME refers to GitHub repository variables (Settings → Secrets and variables → Variables)
             # "domain_name is required by module.external_dns in workflow
             # -var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
             # domain_name is defined in terraform.tfvars but it is not being extracted automatically
