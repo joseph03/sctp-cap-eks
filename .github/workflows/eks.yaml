@@ -125,7 +125,7 @@ jobs:
         timeout-minutes: 10
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -var-file=terraform.tfvars
+            -var-file=./terraform.tfvars
             #-var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
             # "domain_name is required by module.external_dns in workflow
             # -var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
