@@ -123,7 +123,7 @@ jobs:
 
       - name: Debug file location
         run: |
-          echo "Current directory: $(pwd)"
+          echo "Current directory: $(pwd)"   #Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
           ls -la
           echo "Checking for tfvars:"
           ls -la $GITHUB_WORKSPACE/terraform.tfvars
