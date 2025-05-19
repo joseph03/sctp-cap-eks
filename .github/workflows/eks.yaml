@@ -122,24 +122,54 @@ jobs:
         run: terraform validate
         
       - name: Terraform Plan with Target (VPC & EKS)
+        timeout-minutes: 10
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -lock=false 
-            #-var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
-            # -var is not required because domain_name is defined in terraform.tfvars
+            -var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
             # "domain_name is required by module.external_dns in workflow
-
+            # -var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
+            # domain_name is defined in terraform.tfvars but it is not being extracted automatically
+            # remove -lock=false 
+                 
       - name: Terraform Apply Targeted Plan
         run: terraform apply tfplan-vpc-eks
 
+#================== lock cleanup for cancelled job =================
+      - name: Force Unlock Terraform State
+        if: cancelled()  # Runs only when workflow is canceled
+        run: |
+          LOCK_ID=$(aws dynamodb scan \
+            --table-name $ENV_DYNAMODB_NAME \
+            --region us-east-1 \
+            --query "Items[?contains(LockID, 'grp-3joseph03-cap-eks-tfstate')].LockID.S" \
+            --output text)
+          
+          if [ -n "$LOCK_ID" ]; then
+            terraform force-unlock $LOCK_ID -force
+          fi
+
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
-        id: full_plan
         run: terraform plan -out=tfplan-full
 
       - name: Terraform Apply Full Plan
         run: terraform apply tfplan-full
 
+#================== lock cleanup for cancelled job =================
+      - name: Force Unlock Terraform State
+        if: cancelled()  # Runs only when workflow is canceled
+        run: |
+          LOCK_ID=$(aws dynamodb scan \
+            --table-name $ENV_DYNAMODB_NAME \
+            --region us-east-1 \
+            --query "Items[?contains(LockID, 'grp-3joseph03-cap-eks-tfstate')].LockID.S" \
+            --output text)
+          
+          if [ -n "$LOCK_ID" ]; then
+            terraform force-unlock $LOCK_ID -force
+          fi
+          
+#==================== show plan ==================
       - name: Show Full Plan
         id: show_plan
         run: terraform show -no-color tfplan-full > plan_output.txt

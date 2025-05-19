@@ -10,8 +10,12 @@ variable "env" {
 }
 
 variable "domain_name" {
-  description = "The domain name managed by ExternalDNS"
+  description = "Domain for ExternalDNS"
   type        = string
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9.-]+$", var.domain_name))
+    error_message = "Invalid domain name format"
+  }
 }
 
 variable "txt_owner_id" {
