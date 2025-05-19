@@ -125,7 +125,8 @@ jobs:
         timeout-minutes: 10
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
+            -var-file=terraform.tfvars
+            #-var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
             # "domain_name is required by module.external_dns in workflow
             # -var="domain_name=sctp-sandbox.com"   # error if there is space "- var"
             # domain_name is defined in terraform.tfvars but it is not being extracted automatically
@@ -133,21 +134,6 @@ jobs:
                  
       - name: Terraform Apply Targeted Plan
         run: terraform apply tfplan-vpc-eks
-
-#================== lock cleanup for cancelled job =================
-      - name: Force Unlock Terraform State
-        if: cancelled()  # Runs only when workflow is canceled
-        run: |
-          LOCK_ID=$(aws dynamodb scan \
-            --table-name $ENV_DYNAMODB_NAME \
-            --region us-east-1 \
-            --query "Items[?contains(LockID, 'grp-3joseph03-cap-eks-tfstate')].LockID.S" \
-            --output text)
-          
-          if [ -n "$LOCK_ID" ]; then
-            terraform force-unlock $LOCK_ID -force
-          fi
-
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
         run: terraform plan -out=tfplan-full
@@ -157,16 +143,17 @@ jobs:
 
 #================== lock cleanup for cancelled job =================
       - name: Force Unlock Terraform State
-        if: cancelled()  # Runs only when workflow is canceled
+        if: always() && github.event.action == 'cancelled'
         run: |
+          aws sts get-caller-identity # Verify credentials
           LOCK_ID=$(aws dynamodb scan \
             --table-name $ENV_DYNAMODB_NAME \
             --region us-east-1 \
-            --query "Items[?contains(LockID, 'grp-3joseph03-cap-eks-tfstate')].LockID.S" \
+            --query "Items[?contains(LockID.S, 'grp-3joseph03-s3')].LockID.S" \
             --output text)
           
           if [ -n "$LOCK_ID" ]; then
-            terraform force-unlock $LOCK_ID -force
+            terraform force-unlock -force $LOCK_ID
           fi
           
 #==================== show plan ==================
