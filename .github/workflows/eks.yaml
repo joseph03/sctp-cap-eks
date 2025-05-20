@@ -13,14 +13,14 @@ on:
 
 env:
   # env variable name can only have _ and not -
-  ENV_S3_NAME: "grp-3joseph03-s3"                 
-  ENV_DYNAMODB_NAME: "grp-3joseph03-dynamodb"   
+  ENV_S3_NAME: "ce-grp-3a-s3"                 
+  ENV_DYNAMODB_NAME: "ce-grp-3a-dynamodb"   
 
 # remember to use different names for tfplan file in different stages
 # cancel job may cause state lock
 # aws dynamodb delete-item \
-#  --table-name grp-3joseph03-dynamodb \
-#  --key '{"LockID":{"S":"grp-3joseph03-cap-eks-tfstate/cap-eks/terraform.tfstate"}}'
+#  --table-name ce-grp-3a-dynamodb \
+#  --key '{"LockID":{"S":"ce-grp-3a-cap-eks-tfstate/cap-eks/terraform.tfstate"}}'
 jobs:
   eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
@@ -157,7 +157,7 @@ jobs:
           LOCK_ID=$(aws dynamodb scan \
             --table-name $ENV_DYNAMODB_NAME \
             --region us-east-1 \
-            --query "Items[?contains(LockID.S, 'grp-3joseph03-s3')].LockID.S" \
+            --query "Items[?contains(LockID.S, 'ce-grp-3a-s3')].LockID.S" \
             --output text)
           
           if [ -n "$LOCK_ID" ]; then

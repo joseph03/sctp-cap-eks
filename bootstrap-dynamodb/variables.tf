@@ -14,11 +14,11 @@ variable "env" {
 variable "dynamodb_name" {
   description = "dynamodb table name"
   type        = string
-  #default     = "grp-3${local.name_prefix}dynamodb"    # ${local.name_prefix} is not allowed here
+  #default     = "ce-grp-3a-dynamodb"    # ${local.name_prefix} is not allowed here
   default = null
 }
 
 # locals.tf (or in your existing file)
 locals {
-  dynamodb_name = "grp-3${local.name_prefix}dynamodb"
+  dynamodb_name = "ce-grp-3a-dynamodb"
 }

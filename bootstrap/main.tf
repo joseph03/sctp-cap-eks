@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "tf_state" {
-  bucket        = "grp-3${local.name_prefix}s3"
+  bucket        = "ce-grp-3a-s3"
   force_destroy = true
 
   tags = {
-    Name        = "grp-3${local.name_prefix}s3"
+    Name        = "ce-grp-3a-s3"
     Environment = var.env #"dev"
   }
 
@@ -31,7 +31,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "tf_state" {
 }
 
 resource "aws_dynamodb_table" "tf_locks" {
-  name         = "grp-3${local.name_prefix}dynamodb"
+  name         = "ce-grp-3a-dynamodb"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
 
@@ -41,7 +41,7 @@ resource "aws_dynamodb_table" "tf_locks" {
   }
 
   tags = {
-    Name        = "grp-3${local.name_prefix}dynamodb"
+    Name        = "ce-grp-3a-dynamodb"
     Environment = var.env #"dev"
   }
 }
