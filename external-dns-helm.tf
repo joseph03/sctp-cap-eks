@@ -27,7 +27,7 @@ data "aws_iam_policy_document" "external_dns" {
 
 # ✅ IAM policy
 resource "aws_iam_policy" "external_dns" {
-  name        = "ExternalDNSPolicy"
+  name        = "ce-grp-3a-ExternalDNSPolicy"
   description = "Policy for ExternalDNS to access Route53"
   policy      = data.aws_iam_policy_document.external_dns.json
 
