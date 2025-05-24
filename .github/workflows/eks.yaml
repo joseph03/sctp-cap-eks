@@ -75,7 +75,7 @@ jobs:
 
 #================== determine hcl & tfvars ==================
       - name: Determine Backend Config
-        id: hcl&tfvars
+        id: hcl_tfvars
         run: |
           # Determine which backend file to use based on branch
           # Note: GITHUB_REF is in the format refs/heads/branch-name
@@ -135,7 +135,7 @@ jobs:
           ls -la
           echo "Checking for tfvars:"
           #ls -la $GITHUB_WORKSPACE/terraform.tfvars
-          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
 
 #================== bootstrap-s3 ==================
       - name: Terraform Init (bootstrap-s3)
@@ -150,7 +150,7 @@ jobs:
         id: check_s3
         run: |
           # if aws s3api head-bucket --bucket "${ENV_S3_NAME}" 2>/dev/null; then
-          if aws s3api head-bucket --bucket "${{ steps.hcl&tfvars.outputs.bucket }}" 2>/dev/null; then
+          if aws s3api head-bucket --bucket "${{ steps.hcl_tfvars.outputs.bucket }}" 2>/dev/null; then
             echo "s3_exists=true" >> $GITHUB_OUTPUT
           else
             echo "s3_exists=false" >> $GITHUB_OUTPUT
@@ -160,7 +160,7 @@ jobs:
         working-directory: ./bootstrap-s3
         if: steps.check_s3.outputs.s3_exists == 'false' 
         #-var="s3_name=${ENV_S3_NAME}"
-        run: terraform plan -out=tfplan-s3 -var-file=../${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}
+        run: terraform plan -out=tfplan-s3 -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
 
       - name: Terraform Apply (bootstrap-s3)
         working-directory: ./bootstrap-s3
@@ -180,7 +180,7 @@ jobs:
         id: check_dynamodb
         run: |
           # if aws dynamodb describe-table --table-name "${ENV_DYNAMODB_NAME}" 2>/dev/null; then
-          if aws dynamodb describe-table --table-name "${{ steps.hcl&tfvars.outputs.dynamodb_table }}" 2>/dev/null; then
+          if aws dynamodb describe-table --table-name "${{ steps.hcl_tfvars.outputs.dynamodb_table }}" 2>/dev/null; then
             echo "dynamodb_exists=true" >> $GITHUB_OUTPUT
           else
             echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
@@ -190,7 +190,7 @@ jobs:
         working-directory: ./bootstrap-dynamodb
         if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
         #-var="dynamodb_name=${ENV_DYNAMODB_NAME}"
-        run: terraform plan -out=tfplan-dyn -var-file=../${{ steps.hcl&tfvars.outputs.TFVARS_FILE }} 
+        run: terraform plan -out=tfplan-dyn -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }} 
 
       - name: Terraform Apply (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
@@ -220,7 +220,7 @@ jobs:
           echo "Current directory: $(pwd)"   
           ls -la
           echo "Checking for hcl:"
-          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFHCL_FILE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFHCL_FILE }}"
 
 #================== vpc & eks init ==================
       - name: Terraform Init (root)
@@ -234,7 +234,7 @@ jobs:
         timeout-minutes: 10
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -var-file="$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}"
+            -var-file="$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
             #-var-file="$GITHUB_WORKSPACE/terraform.tfvars"
             #-var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
             # vars.DOMAIN_NAME refers to GitHub repository variables (Settings → Secrets and variables → Variables)
