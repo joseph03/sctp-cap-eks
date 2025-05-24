@@ -56,3 +56,5 @@ module "external_dns" {
   domain_name   = "example.com"
   txt_owner_id = "my-cluster"
 }
+
+auto dev, uat, prod
