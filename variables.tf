@@ -1,7 +1,6 @@
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "us-east-1"
 }
 
 variable "env" {
@@ -20,5 +19,10 @@ variable "domain_name" {
 
 variable "txt_owner_id" {
   description = "The owner ID used in TXT records to identify ownership"
+  type        = string
+}
+
+variable "grp-prefix" {
+  description = "Prefix for resource group"
   type        = string
 }

@@ -1,24 +1,24 @@
 
 # kube-system is automatically created by the cluster
 # the following are created in cluster specified in provider "kubernetes" 
-resource "kubernetes_namespace" "joseph03app" {
+resource "kubernetes_namespace" "ns-app" {
   metadata {
-    name = "${local.name_prefix}app"
+    name = "ns-app"
   }
   depends_on = [null_resource.wait_for_eks]
 }
 
 # depend on cluster specified in provider "kubernetes" 
-resource "kubernetes_namespace" "joseph03mon" {
+resource "kubernetes_namespace" "ns-mon" {
   metadata {
-    name = "${local.name_prefix}mon"
+    name = "ns-mon"
   }
   depends_on = [null_resource.wait_for_eks]
 }
 
-resource "kubernetes_namespace" "joseph03db" {
+resource "kubernetes_namespace" "ns-db" {
   metadata {
-    name = "${local.name_prefix}db"
+    name = "ns-db"
   }
   depends_on = [null_resource.wait_for_eks]
 }

@@ -2,7 +2,7 @@ terraform {
 
   # cloud {
   #   workspaces {
-  #     name = "${local.name_prefix}-workspace"
+  #     name = "${var.grp-prefix}-workspace"
   #   }
   # }
 

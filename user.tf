@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 locals {
   # Extract the username (last part after '/')
   username    = element(split("/", data.aws_caller_identity.current.arn), length(split("/", data.aws_caller_identity.current.arn)) - 1)
-  name_prefix = "${local.username}-"
+  name_prefix = "${local.username}-" # ${var.grp-prefix}
 }
 
 # Output the locals

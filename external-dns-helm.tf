@@ -8,6 +8,7 @@ data "aws_iam_policy_document" "external_dns" {
       "route53:TagResource",
       "route53:ChangeTagsForResource"
     ]
+    # these actions require access to sctp-sandbox.com hosted zone
     # aws route53 list-hosted-zones --query 'HostedZones[?Name==`sctp-sandbox.com.`]' 
     resources = [
       "arn:aws:route53:::hostedzone/Z00541411T1NGPV97B5C0"
@@ -21,13 +22,14 @@ data "aws_iam_policy_document" "external_dns" {
       "route53:ListHostedZones",
       "route53:ListTagsForResource",
     ]
+    # * - These actions (like ListHostedZones) require access to all Route 53 resources
     resources = ["*"]
   }
 }
 
 # ✅ IAM policy
 resource "aws_iam_policy" "external_dns" {
-  name        = "ce-grp-3a-ExternalDNSPolicy"
+  name        = "${var.grp-prefix}ExternalDNSPolicy"
   description = "Policy for ExternalDNS to access Route53"
   policy      = data.aws_iam_policy_document.external_dns.json
 
@@ -122,7 +124,7 @@ resource "helm_release" "external_dns" {
   # Add explicit DNS TTL
   set {
     name  = "txt-owner-id"
-    value = "${local.name_prefix}dns-owner"
+    value = "${var.grp-prefix}dns-owner"
   }
   #@@ end
 }

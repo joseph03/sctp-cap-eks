@@ -1,12 +1,8 @@
 locals {
   availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
-}
 
-locals {
-  # Filter out local zones, which are not currently supported 
-  # with managed node groups
-  #cluster_name = "${local.name_prefix}eks-${random_string.suffix.result}"
-  cluster_name = "ce-grp-3a-eks-cluster"
+  #cluster_name = "${var.grp-prefix}eks-${random_string.suffix.result}"
+  cluster_name = "${var.grp-prefix}eks-cluster"
 }
 
 resource "random_string" "suffix" {
@@ -18,7 +14,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.8.1"
 
-  name = "ce-grp-3a-vpc"
+  name = "${var.grp-prefix}vpc"
 
   cidr = "10.0.0.0/16"
   #azs  = slice(data.aws_availability_zones.available.names, 0, 3)

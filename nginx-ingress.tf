@@ -1,5 +1,5 @@
 resource "helm_release" "nginx_ingress" {
-  name       = "${local.name_prefix}nginx-ingress"
+  name       = "${var.grp-prefix}nginx-ingress"
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   version    = "4.9.1"
@@ -10,6 +10,7 @@ resource "helm_release" "nginx_ingress" {
   #   value = "Cluster"
   # }
 
+  #  expose the Ingress via ELB/NLB
   # set {
   #   name  = "controller.service.type"
   #   value = "LoadBalancer"
@@ -23,6 +24,7 @@ resource "helm_release" "nginx_ingress" {
 
   # #--
   # # Add these settings:
+  # NLB (faster, L4, and supports static IPs)
   # set {
   #   name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
   #   value = "nlb"
@@ -40,20 +42,20 @@ resource "helm_release" "nginx_ingress" {
   # end add
   depends_on = [
     kubernetes_namespace.ingress_nginx,
-    kubernetes_namespace.joseph03app, # Use the namespace resource
-    kubernetes_namespace.joseph03mon  # Use the namespace resource
+    kubernetes_namespace.ns-app, # Use the namespace resource
+    kubernetes_namespace.ns-mon  # Use the namespace resource
   ]
   # Note: The above depends_on is not necessary if the namespaces are created in the same file
 }
 
 resource "kubernetes_service" "webapp" {
   metadata {
-    name      = "${local.name_prefix}webapp-service"
-    namespace = kubernetes_namespace.joseph03app.metadata[0].name # ✅ Use the namespace resource
+    name      = "${var.grp-prefix}webapp-service"
+    namespace = kubernetes_namespace.ns-app.metadata[0].name # ✅ Use the namespace resource
   }
   spec {
     selector = {
-      app = "${local.name_prefix}webapp" #linked to deployment
+      app = "${var.grp-prefix}webapp" #linked to deployment
     }
     port {
       name        = "http" #-- This must match the name in the ingress
@@ -69,18 +71,18 @@ resource "kubernetes_service" "webapp" {
   }
   depends_on = [
     kubernetes_namespace.ingress_nginx,
-    kubernetes_namespace.joseph03app, # Use the namespace resource
+    kubernetes_namespace.ns-app, # Use the namespace resource
     kubernetes_ingress_v1.webapp
   ]
 }
 
 resource "kubernetes_ingress_v1" "webapp" {
   metadata {
-    name      = "${local.name_prefix}webapp-ingress"
-    namespace = kubernetes_namespace.joseph03app.metadata[0].name # ✅ Use the namespace resource
+    name      = "${var.grp-prefix}webapp-ingress"
+    namespace = kubernetes_namespace.ns-app.metadata[0].name # ✅ Use the namespace resource
     # annotations = {
     #   "kubernetes.io/ingress.class"               = "nginx"
-    #   "external-dns.alpha.kubernetes.io/hostname" = "${local.name_prefix}webapp.sctp-sandbox.com"
+    #   "external-dns.alpha.kubernetes.io/hostname" = "${var.grp-prefix}webapp.sctp-sandbox.com"
 
     #   #-- Add Health check annotations
     #   "alb.ingress.kubernetes.io/healthcheck-path" = "/"
@@ -90,7 +92,7 @@ resource "kubernetes_ingress_v1" "webapp" {
     #@@ added to solve 504 gateway timeout error
     annotations = {
       "kubernetes.io/ingress.class"                       = "nginx"
-      "external-dns.alpha.kubernetes.io/hostname"         = "${local.name_prefix}webapp.sctp-sandbox.com"
+      "external-dns.alpha.kubernetes.io/hostname"         = "${var.grp-prefix}webapp.sctp-sandbox.com"
       "nginx.ingress.kubernetes.io/proxy-read-timeout"    = "120" #"30"
       "nginx.ingress.kubernetes.io/proxy-connect-timeout" = "120" #"30"
       "nginx.ingress.kubernetes.io/proxy-send-timeout"    = "120" #"30"
@@ -99,20 +101,20 @@ resource "kubernetes_ingress_v1" "webapp" {
 
   depends_on = [
     kubernetes_namespace.ingress_nginx,
-    kubernetes_namespace.joseph03app, # Use the namespace resource
+    kubernetes_namespace.ns-app, # Use the namespace resource
   ]
 
   spec {
     ingress_class_name = "nginx"
     rule {
-      host = "${local.name_prefix}webapp.sctp-sandbox.com"
+      host = "${var.grp-prefix}webapp.sctp-sandbox.com"
       http {
         path {
           path = "/"
           #path_type = "Prefix"
           backend {
             service {
-              name = "${local.name_prefix}webapp-service"
+              name = "${var.grp-prefix}webapp-service"
               port {
                 #--
                 # Choose ONE of these - either name OR number
@@ -133,7 +135,7 @@ resource "kubernetes_ingress_v1" "webapp" {
     #       path = "/"
     #       backend {
     #         service {
-    #           name = "${local.name_prefix}webapp-service"
+    #           name = "${var.grp-prefix}webapp-service"
     #           port { name = "http" }
     #         }
     #       }
@@ -145,35 +147,35 @@ resource "kubernetes_ingress_v1" "webapp" {
 
 resource "kubernetes_deployment" "webapp" {
   metadata {
-    name      = "${local.name_prefix}webapp"
-    namespace = kubernetes_namespace.joseph03app.metadata[0].name # "default"
+    name      = "${var.grp-prefix}webapp"
+    namespace = kubernetes_namespace.ns-app.metadata[0].name # "default"
   }
 
   depends_on = [
     kubernetes_namespace.ingress_nginx,
-    kubernetes_namespace.joseph03app, # Use the namespace resource
-    kubernetes_service.webapp,        # Use the service resource
-    kubernetes_ingress_v1.webapp      # Use the ingress resource
+    kubernetes_namespace.ns-app, # Use the namespace resource
+    kubernetes_service.webapp,   # Use the service resource
+    kubernetes_ingress_v1.webapp # Use the ingress resource
   ]
 
   spec {
     replicas = 2 # Number of replicas for the deployment
     selector {
       match_labels = {
-        app = "${local.name_prefix}webapp"
+        app = "${var.grp-prefix}webapp"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "${local.name_prefix}webapp"
+          app = "${var.grp-prefix}webapp"
         }
       }
 
       spec {
         container {
-          name  = "${local.name_prefix}webapp"
+          name  = "${var.grp-prefix}webapp"
           image = "nginx:latest" # default to port 80. Replace with your app image
           port {
             # use custome image if port 3000 is desired
@@ -198,6 +200,7 @@ resource "kubernetes_deployment" "webapp" {
             }
             initial_delay_seconds = 10
             period_seconds        = 10
+            failure_threshold     = 3 #-- 0523
           }
 
           readiness_probe {
@@ -207,6 +210,7 @@ resource "kubernetes_deployment" "webapp" {
             }
             initial_delay_seconds = 5
             period_seconds        = 5
+            failure_threshold     = 3 #-- 0523
           }
 
         }
@@ -218,13 +222,13 @@ resource "kubernetes_deployment" "webapp" {
 
 resource "kubernetes_horizontal_pod_autoscaler" "webapp" {
   metadata {
-    name      = "${local.name_prefix}webapp-hpa"
-    namespace = kubernetes_namespace.joseph03app.metadata[0].name # ✅ Use the namespace resource
+    name      = "${var.grp-prefix}webapp-hpa"
+    namespace = kubernetes_namespace.ns-app.metadata[0].name # ✅ Use the namespace resource
   }
 
   depends_on = [
     kubernetes_namespace.ingress_nginx,
-    kubernetes_namespace.joseph03app, # Use the namespace resource
+    kubernetes_namespace.ns-app, # Use the namespace resource
   ]
   spec {
     scale_target_ref {
