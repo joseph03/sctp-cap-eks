@@ -106,7 +106,7 @@ jobs:
           #REGION=$(grep 'region' $BACKEND_FILE | awk -F '"' '{print $2}')
           
           # Set outputs for later steps
-          echo "TFVARS_FILE=$TFvARS_FILE" >> $GITHUB_OUTPUT
+          echo "TFVARS_FILE=$TFVARS_FILE" >> $GITHUB_OUTPUT
           echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
           echo "dynamodb_table=$DYNAMODB_TABLE" >> $GITHUB_OUTPUT
           #echo "key=$KEY" >> $GITHUB_OUTPUT
@@ -207,9 +207,9 @@ jobs:
           if [[ "$BRANCH" == "uat" ]]; then
             echo "TFHCL_FILE=backend-uat.hcl" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
-            echo "TFVARS_FILE=backend-prod.hcl" >> $GITHUB_OUTPUT
+            echo "TFHCL_FILE=backend-prod.hcl" >> $GITHUB_OUTPUT
           else
-            echo "TFVARS_FILE=backend-dev.hcl" >> $GITHUB_OUTPUT
+            echo "TFHCL_FILE=backend-dev.hcl" >> $GITHUB_OUTPUT
           fi
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -220,7 +220,7 @@ jobs:
           echo "Current directory: $(pwd)"   
           ls -la
           echo "Checking for hcl:"
-          ls -la "$GITHUB_WORKSPACE/${{ steps.set_tfhcl.outputs.TFHCL_FILE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFHCL_FILE }}"
 
 #================== vpc & eks init ==================
       - name: Terraform Init (root)
