@@ -11,7 +11,18 @@ on:
     branches:
       - uat
       - main
-      
+
+# env:
+#   # env variable name can only have _ and not -
+#   ENV_S3_NAME: "ce-grp-3a-dev-s3"                 
+#   ENV_DYNAMODB_NAME: "ce-grp-3a-dev-dynamodb"   
+
+# remember to use different names for tfplan file in different stages
+# cancel job may cause state lock
+# aws dynamodb delete-item \
+#  --table-name ce-grp-3a-dev-dynamodb \
+#  --key '{"LockID":{"S":"ce-grp-3a-dev-cap-eks-tfstate/cap-eks/terraform.tfstate"}}'
+
 jobs:
   # create-pr:
   #   runs-on: ubuntu-latest
