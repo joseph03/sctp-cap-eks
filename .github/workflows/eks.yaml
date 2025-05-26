@@ -2,15 +2,6 @@ name: Terraform CI/CD Foundation
 
 on:
   push:
-    branches-ignore:
-      - main
-      - uat
-  #workflow_dispatch:
-  # activated when there is pull request to uat or main
-  # pull_request:
-  #   branches:
-  #     - uat
-  #     - main
 
 jobs:
   eks-cluster-dns-ingress:
