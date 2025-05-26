@@ -1,10 +1,6 @@
 name: Auto PR to uat
 
 on:
-  push:
-    branches-ignore:
-      - main
-      - uat
   workflow_dispatch:
 
 jobs:
