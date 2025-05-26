@@ -7,9 +7,9 @@ jobs:
   eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
-    # permissions:
-    #   pull-requests: write # to write plan_output.txt as comments to PR
-    #   contents: read
+    permissions:
+      pull-requests: write # to write plan_output.txt as comments to PR
+      contents: read
 
 
     steps:
