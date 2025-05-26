@@ -1,7 +1,7 @@
 name: Terraform CI/CD Foundation
 
 on:
-  push:
+  push:    # response to all pushes
 
 jobs:
   eks-cluster-dns-ingress:
