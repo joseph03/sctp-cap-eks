@@ -125,6 +125,7 @@ jobs:
 
       - name: Validate Terraform (bootstrap-s3)
         working-directory: ./bootstrap-s3
+        if: steps.check_s3.outputs.s3_exists == 'false'    #0527 add
         run: terraform validate
 
       - name: Terraform Plan (bootstrap-s3)
@@ -139,14 +140,6 @@ jobs:
         run: terraform apply tfplan-s3
 
 #==================== bootstrap-dynamodb ==================
-      - name: Terraform Init (bootstrap-dynamodb)
-        working-directory: ./bootstrap-dynamodb
-        run: terraform init
-
-      - name: Validate Terraform (bootstrap-dynamodb)
-        working-directory: ./bootstrap-dynamodb
-        run: terraform validate
-
       - name: Check DynamoDB table existence
         id: check_dynamodb
         run: |
@@ -156,6 +149,16 @@ jobs:
           else
             echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
           fi
+        
+      - name: Terraform Init (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform init
+
+      - name: Validate Terraform (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform validate
 
       - name: Terraform Plan (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
