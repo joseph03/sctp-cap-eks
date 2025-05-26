@@ -11,18 +11,8 @@ on:
     branches:
       - uat
       - main
-      
-jobs:
-  # create-pr:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Create PR to uat
-  #       uses: repo-sync/pull-request@v2
-  #       with:
-  #         destination_branch: uat
-  #         pr_title: "Auto PR to uat from ${{ github.ref_name }}"
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
 
+jobs:
   eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
