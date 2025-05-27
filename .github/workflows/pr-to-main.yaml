@@ -26,4 +26,4 @@ jobs:
           destination_branch: main
           pr_title: "Auto PR to main from ${{ github.ref_name }}"
           #github_token: ${{ secrets.GITHUB_TOKEN }}
-          github_token: ${{ secrets.cap-PAT }}
+          github_token: ${{ secrets.PERSONAL_TOKEN }}
