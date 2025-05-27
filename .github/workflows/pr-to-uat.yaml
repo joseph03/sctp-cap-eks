@@ -1,8 +1,8 @@
 name: Auto PR to uat
-permissions:
-  contents: write
-  pull-requests: write
-  
+# permissions:
+#   contents: write
+#   pull-requests: write
+
 on:
   push:
     branches-ignore:
@@ -25,4 +25,5 @@ jobs:
           source_branch: ${{ github.ref_name }}  # Explicitly set source branch
           destination_branch: uat
           pr_title: "Auto PR to uat from ${{ github.ref_name }}"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          #github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.cap-PAT }}

@@ -1,7 +1,7 @@
 name: Auto PR to main
-permissions:
-  contents: write
-  pull-requests: write
+# permissions:
+#   contents: write
+#   pull-requests: write
 
 on:
   push:    
@@ -25,4 +25,5 @@ jobs:
           source_branch: ${{ github.ref_name }}  # Explicitly set source branch
           destination_branch: main
           pr_title: "Auto PR to main from ${{ github.ref_name }}"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          #github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.cap-PAT }}
