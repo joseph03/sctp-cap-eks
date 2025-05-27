@@ -252,8 +252,9 @@ jobs:
         run: terraform apply tfplan-vpc-eks
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
-        run: terraform plan -out=tfplan-full \
-         -var-file="$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
+        run: |
+         terraform plan -out=tfplan-full \
+           -var-file="$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
         
       - name: Terraform Apply Full Plan
         run: terraform apply tfplan-full
