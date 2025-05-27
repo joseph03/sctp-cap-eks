@@ -2,8 +2,38 @@ name: Terraform CI/CD Foundation
 
 on:
   push:    # response to all pushes
+    # branches-ignore:
+    #   - main
+    #   - uat
+  #workflow_dispatch:
+  # activated when there is pull request to uat or main
+  pull_request:
+    branches:
+      - uat
+      - main
+
+# env:
+#   # env variable name can only have _ and not -
+#   ENV_S3_NAME: "ce-grp-3a-dev-s3"                 
+#   ENV_DYNAMODB_NAME: "ce-grp-3a-dev-dynamodb"   
+
+# remember to use different names for tfplan file in different stages
+# cancel job may cause state lock
+# aws dynamodb delete-item \
+#  --table-name ce-grp-3a-dev-dynamodb \
+#  --key '{"LockID":{"S":"ce-grp-3a-dev-cap-eks-tfstate/cap-eks/terraform.tfstate"}}'
 
 jobs:
+  # create-pr:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Create PR to uat
+  #       uses: repo-sync/pull-request@v2
+  #       with:
+  #         destination_branch: uat
+  #         pr_title: "Auto PR to uat from ${{ github.ref_name }}"
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}
+
   eks-cluster-dns-ingress:
     name: Terraform Plan & Apply
     runs-on: ubuntu-latest
@@ -68,21 +98,22 @@ jobs:
             echo "Error: Backend file $BACKEND_FILE not found"
             exit 1
           fi
+          # Verify tfvars file exists
+          if [ ! -f "$TFVARS_FILE" ]; then
+            echo "Error: tfvars file $TFVARS_FILE not found"
+            exit 1
+          fi
           
           # Extract values from HCL file
           BUCKET=$(grep 'bucket' $BACKEND_FILE | awk -F '"' '{print $2}')
           DYNAMODB_TABLE=$(grep 'dynamodb_table' $BACKEND_FILE | awk -F '"' '{print $2}')
-          #KEY=$(grep 'key' $BACKEND_FILE | awk -F '"' '{print $2}')
-          #REGION=$(grep 'region' $BACKEND_FILE | awk -F '"' '{print $2}')
           
           # Set outputs for later steps
           echo "TFVARS_FILE=$TFVARS_FILE" >> $GITHUB_OUTPUT
           echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
           echo "dynamodb_table=$DYNAMODB_TABLE" >> $GITHUB_OUTPUT
-          #echo "key=$KEY" >> $GITHUB_OUTPUT
-          #echo "region=$REGION" >> $GITHUB_OUTPUT
 
-#================== debug tfvars file ==================
+#================== show location of tfvars file ==================
       # - name: Set tfvars file
       #   id: set_tfvars
       #   run: |
@@ -99,7 +130,7 @@ jobs:
       #   env:
       #     GITHUB_REF: ${{ github.ref }}
 
-      - name: Debug tfvars file location
+      - name: show location of tfvars file
         run: |
           echo "Current directory: $(pwd)"   #Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
           ls -la
@@ -217,7 +248,7 @@ jobs:
             # domain_name is defined in terraform.tfvars but it is not being extracted automatically
             # remove -lock=false 
                  
-      - name: Terraform Apply Targeted Plan
+      - name: Terraform Apply Targeted Plan (VPC & EKS)
         run: terraform apply tfplan-vpc-eks
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
@@ -232,9 +263,9 @@ jobs:
         run: |
           aws sts get-caller-identity # Verify credentials
           LOCK_ID=$(aws dynamodb scan \
-            --table-name $ENV_DYNAMODB_NAME \
+            --table-name "${{ steps.hcl_tfvars.outputs.dynamodb_table }}"   # $ENV_DYNAMODB_NAME \
             --region us-east-1 \
-            --query "Items[?contains(LockID.S, 'ce-grp-3a-s3')].LockID.S" \
+            --query "Items[?contains(LockID.S, "${{ steps.hcl_tfvars.outputs.bucket }}")].LockID.S" \
             --output text)
           
           if [ -n "$LOCK_ID" ]; then

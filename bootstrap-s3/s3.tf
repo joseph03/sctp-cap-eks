@@ -1,19 +1,11 @@
 resource "aws_s3_bucket" "tf_state" {
-  bucket        = coalesce(var.s3_name, local.s3_name) # Use var.s3_name if provided, else local.s3_name
+  # Use var.s3_name if provided, else local.s3_name
+  # coalesce(var.s3_name, local.s3_name) 
+  bucket        = local.s3_name # Use local.s3_name as the bucket name
   force_destroy = true
 
   tags = {
-    Name        = coalesce(var.s3_name, local.s3_name) # Use var.s3_name if provided, else local.s3_name
-    Environment = var.env                              #"dev"
-  }
-}
-
-resource "aws_s3_bucket" "tf_state" {
-  bucket        = "${var.grp-prefix}s3"
-  force_destroy = true
-
-  tags = {
-    Name        = "${var.grp-prefix}s3"
+    Name        = local.s3_name # Use local.s3_name for the tag
     Environment = var.env #"dev"
   }
 }
