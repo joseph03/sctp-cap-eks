@@ -1,4 +1,4 @@
-name: Auto PR to main
+name: Auto PR to feature
 permissions:
   contents: write
   pull-requests: write
@@ -6,7 +6,7 @@ permissions:
 on:
   push:    
     branches:
-      - uat
+      - main
   workflow_dispatch:
 
 jobs:
@@ -18,11 +18,11 @@ jobs:
         with:
           fetch-depth: 0  # This fetches all history and branches
 
-      - name: Create PR to main
+      - name: Create PR to feature
         uses: repo-sync/pull-request@v2
         with:
           source_branch: ${{ github.ref_name }}  # Explicitly set source branch
-          destination_branch: main
+          destination_branch: 05-external-dns
           pr_title: "Auto PR to main from ${{ github.ref_name }}"
           #github_token: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
