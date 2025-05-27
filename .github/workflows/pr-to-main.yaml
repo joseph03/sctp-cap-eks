@@ -1,7 +1,7 @@
 name: Auto PR to main
-# permissions:
-#   contents: write
-#   pull-requests: write
+permissions:
+  contents: write
+  pull-requests: write
 
 on:
   push:    
