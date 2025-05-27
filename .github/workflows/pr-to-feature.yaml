@@ -1,13 +1,12 @@
-name: Auto PR to uat
+name: Auto PR to feature
 permissions:
   contents: write
   pull-requests: write
 
 on:
-  push:
-    branches-ignore:
+  push:    
+    branches:
       - main
-      - uat
   workflow_dispatch:
 
 jobs:
@@ -19,14 +18,14 @@ jobs:
         with:
           fetch-depth: 0  # This fetches all history and branches
 
-      - name: Create PR to uat
+      - name: Create PR to feature
         uses: repo-sync/pull-request@v2
         with:
           source_branch: ${{ github.ref_name }}  # Explicitly set source branch
-          destination_branch: uat
-          pr_title: "Auto PR to uat from ${{ github.ref_name }}"
+          destination_branch: 05-external-dns
+          pr_title: "Auto PR to main from ${{ github.ref_name }}"
           #github_token: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-          #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        #   #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

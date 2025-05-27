@@ -1,15 +1,31 @@
 name: Auto PR to main
+permissions:
+  contents: write
+  pull-requests: write
 
 on:
+  push:    
+    branches:
+      - uat
   workflow_dispatch:
 
 jobs:
   create-pr:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # This fetches all history and branches
+
       - name: Create PR to main
         uses: repo-sync/pull-request@v2
         with:
+          source_branch: ${{ github.ref_name }}  # Explicitly set source branch
           destination_branch: main
-          pr_title: "Auto PR to main from uat"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Auto PR to main from ${{ github.ref_name }}"
+          #github_token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        #   #GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

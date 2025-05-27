@@ -57,4 +57,6 @@ module "external_dns" {
   txt_owner_id = "my-cluster"
 }
 
-auto dev, uat, prod - why pr error?
+auto dev, uat, prod 
+use hcl and tfvars files
+rebase main

@@ -17,15 +17,13 @@ variable "grp-prefix" {
   type        = string
 }
 
-variable "s3_name" {
-  description = "S3 bucket name"
-  type        = string
-  #default     = "ce-grp-3a-s3"   # ${var.grp-prefix} is not allowed here
-  default = null
-}
-#"ce-grp-3a-s3"
+# variable "s3_name" {
+#   description = "S3 bucket name"
+#   type        = string
+#   #default     = "ce-grp-3a-dev-s3"   # ${var.grp-prefix} is not allowed here
+#   default = null
+# }
 
-# locals.tf (or in your existing file)
 locals {
   s3_name = "${var.grp-prefix}s3"
 }

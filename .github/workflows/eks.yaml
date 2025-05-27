@@ -1,16 +1,16 @@
 name: Terraform CI/CD Foundation
 
 on:
-  push:
-    branches-ignore:
-      - main
-      - uat
+  push:    # response to all pushes
+    # branches-ignore:
+    #   - main
+    #   - uat
   #workflow_dispatch:
   # activated when there is pull request to uat or main
-  pull_request:
-    branches:
-      - uat
-      - main
+  # pull_request:
+  #   branches:
+  #     - uat
+  #     - main
 
 # env:
 #   # env variable name can only have _ and not -
@@ -75,13 +75,13 @@ jobs:
 
 #================== determine hcl & tfvars ==================
       - name: Determine Backend Config
-        id: hcl&tfvars
+        id: hcl_tfvars
         run: |
           # Determine which backend file to use based on branch
           # Note: GITHUB_REF is in the format refs/heads/branch-name
           # Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
-          echo "GITHUB_REF: $GITHUB_REF"
-          echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "GITHUB_REF: ${GITHUB_REF}"
+          echo "GITHUB_REF_NAME: ${GITHUB_REF_NAME}"
           if [[ $GITHUB_REF == refs/heads/main ]]; then
             BACKEND_FILE="backend-prod.hcl"
             TFVARS_FILE=env-prod.tfvars
@@ -98,21 +98,22 @@ jobs:
             echo "Error: Backend file $BACKEND_FILE not found"
             exit 1
           fi
+          # Verify tfvars file exists
+          if [ ! -f "$TFVARS_FILE" ]; then
+            echo "Error: tfvars file $TFVARS_FILE not found"
+            exit 1
+          fi
           
           # Extract values from HCL file
           BUCKET=$(grep 'bucket' $BACKEND_FILE | awk -F '"' '{print $2}')
           DYNAMODB_TABLE=$(grep 'dynamodb_table' $BACKEND_FILE | awk -F '"' '{print $2}')
-          #KEY=$(grep 'key' $BACKEND_FILE | awk -F '"' '{print $2}')
-          #REGION=$(grep 'region' $BACKEND_FILE | awk -F '"' '{print $2}')
           
           # Set outputs for later steps
-          echo "TFVARS_FILE=$TFvARS_FILE" >> $GITHUB_OUTPUT
+          echo "TFVARS_FILE=$TFVARS_FILE" >> $GITHUB_OUTPUT
           echo "bucket=$BUCKET" >> $GITHUB_OUTPUT
           echo "dynamodb_table=$DYNAMODB_TABLE" >> $GITHUB_OUTPUT
-          #echo "key=$KEY" >> $GITHUB_OUTPUT
-          #echo "region=$REGION" >> $GITHUB_OUTPUT
 
-#================== debug tfvars file ==================
+#================== show location of tfvars file ==================
       # - name: Set tfvars file
       #   id: set_tfvars
       #   run: |
@@ -129,38 +130,40 @@ jobs:
       #   env:
       #     GITHUB_REF: ${{ github.ref }}
 
-      - name: Debug tfvars file location
+      - name: show location of tfvars file
         run: |
           echo "Current directory: $(pwd)"   #Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
           ls -la
           echo "Checking for tfvars:"
           #ls -la $GITHUB_WORKSPACE/terraform.tfvars
-          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
 
 #================== bootstrap-s3 ==================
-      - name: Terraform Init (bootstrap-s3)
-        working-directory: ./bootstrap-s3
-        run: terraform init
-
-      - name: Validate Terraform (bootstrap-s3)
-        working-directory: ./bootstrap-s3
-        run: terraform validate
-
       - name: Check S3 bucket existence
         id: check_s3
         run: |
           # if aws s3api head-bucket --bucket "${ENV_S3_NAME}" 2>/dev/null; then
-          if aws s3api head-bucket --bucket "${{ steps.hcl&tfvars.outputs.bucket }}" 2>/dev/null; then
+          if aws s3api head-bucket --bucket "${{ steps.hcl_tfvars.outputs.bucket }}" 2>/dev/null; then
             echo "s3_exists=true" >> $GITHUB_OUTPUT
           else
             echo "s3_exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Terraform Init (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        if: steps.check_s3.outputs.s3_exists == 'false'    #0527 add
+        run: terraform init
+
+      - name: Validate Terraform (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        if: steps.check_s3.outputs.s3_exists == 'false'    #0527 add
+        run: terraform validate
+
       - name: Terraform Plan (bootstrap-s3)
         working-directory: ./bootstrap-s3
         if: steps.check_s3.outputs.s3_exists == 'false' 
         #-var="s3_name=${ENV_S3_NAME}"
-        run: terraform plan -out=tfplan-s3 -var-file=../${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}
+        run: terraform plan -out=tfplan-s3 -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
 
       - name: Terraform Apply (bootstrap-s3)
         working-directory: ./bootstrap-s3
@@ -168,29 +171,31 @@ jobs:
         run: terraform apply tfplan-s3
 
 #==================== bootstrap-dynamodb ==================
-      - name: Terraform Init (bootstrap-dynamodb)
-        working-directory: ./bootstrap-dynamodb
-        run: terraform init
-
-      - name: Validate Terraform (bootstrap-dynamodb)
-        working-directory: ./bootstrap-dynamodb
-        run: terraform validate
-
       - name: Check DynamoDB table existence
         id: check_dynamodb
         run: |
           # if aws dynamodb describe-table --table-name "${ENV_DYNAMODB_NAME}" 2>/dev/null; then
-          if aws dynamodb describe-table --table-name "${{ steps.hcl&tfvars.outputs.dynamodb_table }}" 2>/dev/null; then
+          if aws dynamodb describe-table --table-name "${{ steps.hcl_tfvars.outputs.dynamodb_table }}" 2>/dev/null; then
             echo "dynamodb_exists=true" >> $GITHUB_OUTPUT
           else
             echo "dynamodb_exists=false" >> $GITHUB_OUTPUT
           fi
+        
+      - name: Terraform Init (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform init
+
+      - name: Validate Terraform (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
+        run: terraform validate
 
       - name: Terraform Plan (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
         if: steps.check_dynamodb.outputs.dynamodb_exists == 'false' 
         #-var="dynamodb_name=${ENV_DYNAMODB_NAME}"
-        run: terraform plan -out=tfplan-dyn -var-file=../${{ steps.hcl&tfvars.outputs.TFVARS_FILE }} 
+        run: terraform plan -out=tfplan-dyn -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }} 
 
       - name: Terraform Apply (bootstrap-dynamodb)
         working-directory: ./bootstrap-dynamodb
@@ -207,9 +212,9 @@ jobs:
           if [[ "$BRANCH" == "uat" ]]; then
             echo "TFHCL_FILE=backend-uat.hcl" >> $GITHUB_OUTPUT
           elif [[ "$BRANCH" == "main" ]]; then
-            echo "TFVARS_FILE=backend-prod.hcl" >> $GITHUB_OUTPUT
+            echo "TFHCL_FILE=backend-prod.hcl" >> $GITHUB_OUTPUT
           else
-            echo "TFVARS_FILE=backend-dev.hcl" >> $GITHUB_OUTPUT
+            echo "TFHCL_FILE=backend-dev.hcl" >> $GITHUB_OUTPUT
           fi
         env:
           GITHUB_REF: ${{ github.ref }}
@@ -220,7 +225,7 @@ jobs:
           echo "Current directory: $(pwd)"   
           ls -la
           echo "Checking for hcl:"
-          ls -la "$GITHUB_WORKSPACE/${{ steps.set_tfhcl.outputs.TFHCL_FILE }}"
+          ls -la "$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFHCL_FILE }}"
 
 #================== vpc & eks init ==================
       - name: Terraform Init (root)
@@ -234,7 +239,7 @@ jobs:
         timeout-minutes: 10
         run: |
           terraform plan -out=tfplan-vpc-eks -target=module.vpc -target=module.eks \
-            -var-file="$GITHUB_WORKSPACE/${{ steps.hcl&tfvars.outputs.TFVARS_FILE }}"
+            -var-file="$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
             #-var-file="$GITHUB_WORKSPACE/terraform.tfvars"
             #-var="domain_name=${{ vars.DOMAIN_NAME || 'sctp-sandbox.com' }}" 
             # vars.DOMAIN_NAME refers to GitHub repository variables (Settings → Secrets and variables → Variables)
@@ -243,29 +248,38 @@ jobs:
             # domain_name is defined in terraform.tfvars but it is not being extracted automatically
             # remove -lock=false 
                  
-      - name: Terraform Apply Targeted Plan
+      - name: Terraform Apply Targeted Plan (VPC & EKS)
         run: terraform apply tfplan-vpc-eks
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
-        run: terraform plan -out=tfplan-full
-
+        run: |
+         terraform plan -out=tfplan-full \
+           -var-file="$GITHUB_WORKSPACE/${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}"
+        
       - name: Terraform Apply Full Plan
         run: terraform apply tfplan-full
 
 #================== lock cleanup for cancelled job =================
       - name: Force Unlock Terraform State
-        if: always() && github.event.action == 'cancelled'
+        if: always()
         run: |
-          aws sts get-caller-identity # Verify credentials
-          LOCK_ID=$(aws dynamodb scan \
-            --table-name $ENV_DYNAMODB_NAME \
+          LOCK_ID="cap-eks/terraform.tfstate"
+
+          # Attempt get-item
+          MATCH=$(aws dynamodb get-item \
+            --table-name "${{ steps.hcl_tfvars.outputs.dynamodb_table }}" \
             --region us-east-1 \
-            --query "Items[?contains(LockID.S, 'ce-grp-3a-s3')].LockID.S" \
-            --output text)
-          
-          if [ -n "$LOCK_ID" ]; then
-            terraform force-unlock -force $LOCK_ID
+            --key "{\"LockID\": {\"S\": \"$LOCK_ID\"}}" \
+            --query "Item.LockID.S" \
+            --output text || true)
+
+          if [ "$MATCH" = "$LOCK_ID" ]; then
+            echo "Found lock: $LOCK_ID — forcing unlock"
+            terraform force-unlock -force "$LOCK_ID"
+          else
+            echo "No lock found — skipping unlock"
           fi
+
           
 #==================== show plan in PR ==================
       - name: Show Full Plan
