@@ -1,5 +1,8 @@
 name: Auto PR to uat
-
+permissions:
+  contents: write
+  pull-requests: write
+  
 on:
   push:
     branches-ignore:

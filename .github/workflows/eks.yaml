@@ -252,14 +252,15 @@ jobs:
         run: terraform apply tfplan-vpc-eks
 #================== ingress, externa-dns, namespaces =================
       - name: Terraform Full Plan
-        run: terraform plan -out=tfplan-full
+        run: terraform plan -out=tfplan-full -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
 
       - name: Terraform Apply Full Plan
         run: terraform apply tfplan-full
 
 #================== lock cleanup for cancelled job =================
       - name: Force Unlock Terraform State
-        if: always() && github.event.action == 'cancelled'
+        #if: always() && github.event.action == 'cancelled'
+        if: always() && (github.event.workflow_run.conclusion == 'cancelled' || failure())  # Covers both cancelled and failed jobs
         run: |
           aws sts get-caller-identity # Verify credentials
           LOCK_ID=$(aws dynamodb scan \
