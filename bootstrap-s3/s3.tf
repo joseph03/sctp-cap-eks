@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "tf_state" {
 
   tags = {
     Name        = local.s3_name # Use local.s3_name for the tag
-    Environment = var.env #"dev"
+    Environment = var.env       #"dev"
   }
 }
 

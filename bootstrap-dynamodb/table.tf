@@ -10,7 +10,7 @@ resource "aws_dynamodb_table" "tf_locks" {
   }
 
   tags = {
-    Name        = local.dynamodb_name  #coalesce(var.dynamodb_name, local.dynamodb_name)
-    Environment = var.env #"dev"
+    Name        = local.dynamodb_name #coalesce(var.dynamodb_name, local.dynamodb_name)
+    Environment = var.env             #"dev"
   }
 }

@@ -11,9 +11,15 @@ jobs:
   create-pr:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # This fetches all history and branches
+
       - name: Create PR to main
         uses: repo-sync/pull-request@v2
         with:
-          destination_branch: main
-          pr_title: "Auto PR to main from uat"
+          source_branch: ${{ github.ref_name }}  # Explicitly set source branch
+          destination_branch: uat
+          pr_title: "Auto PR to mainfrom ${{ github.ref_name }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
