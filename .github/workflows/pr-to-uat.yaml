@@ -1,7 +1,7 @@
 name: Auto PR to uat
-# permissions:
-#   contents: write
-#   pull-requests: write
+permissions:
+  contents: write
+  pull-requests: write
 
 on:
   push:
@@ -27,4 +27,5 @@ jobs:
           pr_title: "Auto PR to uat from ${{ github.ref_name }}"
           #github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          GITHUB_TOKEN: ${{ secrets.cap-PAT }}
+          #GITHUB_TOKEN: ${{ secrets.cap-PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
