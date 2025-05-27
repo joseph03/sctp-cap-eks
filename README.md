@@ -59,3 +59,4 @@ module "external_dns" {
 
 auto dev, uat, prod 
 use hcl and tfvars files
+rebase main
