@@ -62,3 +62,5 @@ use hcl and tfvars files
 rebase main
 restart testing from dev
 retest dev, uat again
+check http://ce-grp-3a-webapp.sctp-sandbox.com/ not working. why ?
+check http://ce-grp-3a-webapp.sctp-sandbox.com/ not working
