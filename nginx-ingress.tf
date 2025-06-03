@@ -100,6 +100,7 @@ resource "kubernetes_ingress_v1" "webapp" {
   }
 
   depends_on = [
+    helm_release.nginx_ingress,
     kubernetes_namespace.ingress_nginx,
     kubernetes_namespace.ns-app, # Use the namespace resource
   ]
