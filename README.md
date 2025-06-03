@@ -1,4 +1,7 @@
 # EKS Infrastructure for [ce-grp=3a ecommerce website](https://ce-grp-3a-my-app2.sctp-sandbox.com/)
+
+---
+
 ## EKS Infrastructure CI/CD Pipeline 
 
 This repository provides a CI/CD pipeline for provisioning and managing an AWS Elastic Kubernetes Service (EKS) cluster and its supporting infrastructure using Terraform, automated via GitHub Actions.
