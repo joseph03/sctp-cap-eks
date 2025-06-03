@@ -121,6 +121,4 @@ This repository is licensed under the MIT License.
 
 ---
 
-> For detailed workflow logic, see the `eks.yaml` file in the `.github/workflows` directory.[1]
-
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/10296051/94ead311-d88c-43c6-85b5-b68aabdeecc7/paste.txt
+> For detailed workflow logic, see the `eks.yaml` file in the `.github/workflows` directory.
