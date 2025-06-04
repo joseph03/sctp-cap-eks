@@ -81,6 +81,18 @@ The infrastructure supports multiple environments through the `grp-prefix` varia
 
 This repository provides a CI/CD pipeline for provisioning and managing an AWS Elastic Kubernetes Service (EKS) cluster and its supporting infrastructure using Terraform, automated via GitHub Actions.
 
+[Push/Merge Event]
+  │
+  ├─→ eks-cluster-dns-ingress (eks.yaml) (All branches)
+  │
+  └─→ Branch Type?
+      ├─ feature/* → pr-to-uat.yaml
+      ├─ uat/* → pr-to-main.yaml
+      └─ main/* → pr-to-feature.yaml
+
+![alt text](workflow00a-push-merge.png)
+
+
 ---
 
 **Features**
@@ -94,45 +106,9 @@ This repository provides a CI/CD pipeline for provisioning and managing an AWS E
 
 ---
 
-## How It Works
+### Workflow Steps of eks.yaml
 
-The pipeline is defined in `eks.yaml` and is triggered on every push to the repository. It determines the deployment environment (dev, uat, prod) based on the branch name and selects the appropriate backend and variable files accordingly.
-
-### Workflow Steps
-
-1. **Checkout Repository**
-   - The workflow begins by checking out the repository code.
-
-2. **AWS Credentials Setup**
-   - AWS credentials are configured using GitHub Secrets.
-
-3. **Terraform Setup**
-   - Terraform is installed and initialized with the specified version.
-
-4. **Code Formatting**
-   - Runs `terraform fmt` recursively to enforce code formatting standards.
-
-5. **Environment Detection**
-   - The workflow determines which backend and variable files to use based on the branch (`main` for prod, `uat` for UAT, others for dev).
-
-6. **S3 and DynamoDB Bootstrapping**
-   - Checks for the existence of the required S3 bucket and DynamoDB table for state management.
-   - If missing, initializes and applies Terraform configurations in `bootstrap-s3` and `bootstrap-dynamodb` directories to create them.
-
-7. **Terraform Initialization**
-   - Initializes Terraform in the root directory with the correct backend configuration.
-
-8. **VPC & EKS Deployment**
-   - Runs a targeted Terraform plan and apply for VPC and EKS modules.
-
-9. **Full Infrastructure Deployment**
-   - Runs a full Terraform plan and apply for the remaining resources (Ingress, External DNS, Namespaces, etc.).
-
-10. **State Lock Cleanup**
-    - Ensures any leftover Terraform state locks in DynamoDB are force-unlocked to prevent future job failures.
-
-11. **Plan Visibility**
-    - Posts the Terraform plan output as a comment on pull requests for transparency and review.
+![alt text](workflow01eks-cluster-dns-ingres.png)
 
 ---
 
@@ -196,4 +172,3 @@ This repository is licensed under the MIT License.
 
 ---
 
-> For detailed workflow logic, see the `eks.yaml` file in the `.github/workflows` directory.
