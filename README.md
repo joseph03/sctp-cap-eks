@@ -138,7 +138,7 @@ This repository provides a CI/CD pipeline for provisioning and managing an AWS E
 
 ## File Structure Overview
 
-- `eks.yaml`: Main GitHub Actions workflow file for CI/CD automation
+- `.github/workflows/`: GitHub Action workflow files for CI/CD automation
 - `bootstrap-s3/`: Terraform config for S3 backend
 - `bootstrap-dynamodb/`: Terraform config for DynamoDB state lock table
 - `backend-*.hcl`: Terraform backend configuration files per environment
