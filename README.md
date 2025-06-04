@@ -1,4 +1,79 @@
-# EKS Infrastructure for [ce-grp=3a ecommerce website](https://ce-grp-3a-my-app2.sctp-sandbox.com/)
+# AWS EKS Infrastructure with Terraform
+
+This Terraform project provisions a complete EKS (Elastic Kubernetes Service) environment on AWS with supporting infrastructure for [ce-grp=3a ecommerce website](https://ce-grp-3a-my-app2.sctp-sandbox.com/)
+
+
+The infrastructure consists of:
+
+1. **Networking**:
+   - VPC with public and private subnets across 3 AZs
+   - NAT Gateway for outbound internet access from private subnets
+   - Properly tagged subnets for EKS integration
+
+2. **EKS Cluster**:
+   - Managed control plane with version 1.32
+   - Two managed node groups with t3.medium instances
+   - IAM Roles for Service Accounts (IRSA) for EBS CSI driver
+
+3. **Kubernetes Components**:
+   - Core namespaces (ns-app, ns-mon, ns-db)
+   - NGINX Ingress Controller
+   - Sample webapp deployment with HPA
+   - Metrics Server for autoscaling
+   - External DNS for Route53 integration
+
+4. **Addons**:
+   - AWS EBS CSI Driver for persistent storage
+   - External DNS for automatic DNS record management
+
+## Key Features
+
+- **High Availability**: Deployed across 3 availability zones
+- **Auto-scaling**: Horizontal Pod Autoscaler and cluster autoscaler
+- **Security**: IAM roles for service accounts (IRSA)
+- **Observability**: Metrics server for resource monitoring
+- **CI/CD Ready**: Environment-aware configuration (dev/uat/prod)
+
+## Deployment Workflow
+
+1. VPC provisioning
+2. EKS cluster creation
+3. Node group deployment
+4. Kubernetes addons installation
+5. Application deployment
+6. Ingress controller setup
+7. DNS configuration
+
+## Environment Variables
+
+The infrastructure supports multiple environments through the `grp-prefix` variable:
+
+- `ce-grp-3a-dev-` for development
+- `ce-grp-3a-uat-` for user acceptance testing
+- `ce-grp-3a-prod-` for production
+
+## Dependencies
+
+- Terraform v1.0+
+- AWS provider v5.0+
+- kubectl
+- helm
+
+## Integration Flow
+
+![alt text](00-integration.png)
+
+### AWS Infrastructure Layer
+
+![alt text](01-vpc.png)
+
+### EKS Cluster Layer
+
+![alt text](02-eks.png)
+
+### Kubernetes Resources Layer
+
+![alt text](03-eks-resources.png)
 
 ---
 
