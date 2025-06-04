@@ -81,14 +81,13 @@ The infrastructure supports multiple environments through the `grp-prefix` varia
 
 This repository provides a CI/CD pipeline for provisioning and managing an AWS Elastic Kubernetes Service (EKS) cluster and its supporting infrastructure using Terraform, automated via GitHub Actions.
 
-[Push/Merge Event]
-  │
-  ├─→ eks-cluster-dns-ingress (eks.yaml) (All branches)
-  │
-  └─→ Branch Type?
-      ├─ feature/* → pr-to-uat.yaml
-      ├─ uat/* → pr-to-main.yaml
-      └─ main/* → pr-to-feature.yaml
+**Push/Merge Event**
+- `eks-cluster-dns-ingress` (`eks.yaml`) *(All branches)*
+- **Branch Type?**
+  - `feature/*` → `pr-to-uat.yaml`
+  - `uat/*` → `pr-to-main.yaml`
+  - `main/*` → `pr-to-feature.yaml`
+
 
 ![alt text](workflow00a-push-merge.png)
 
