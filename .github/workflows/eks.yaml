@@ -94,6 +94,9 @@ jobs:
             TFVARS_FILE=env-dev.tfvars
           fi
 
+          echo "Using backend file: $BACKEND_FILE"
+          echo "Using tfvars file: $TFVARS_FILE"
+
           # Verify backend file exists
           if [ ! -f "$BACKEND_FILE" ]; then
             echo "Error: Backend file $BACKEND_FILE not found"
