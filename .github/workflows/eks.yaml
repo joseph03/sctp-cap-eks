@@ -80,6 +80,7 @@ jobs:
           # Determine which backend file to use based on branch
           # Note: GITHUB_REF is in the format refs/heads/branch-name
           # Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
+          # sctp-cap-eks is repo name
           echo "GITHUB_REF: ${GITHUB_REF}"
           echo "GITHUB_REF_NAME: ${GITHUB_REF_NAME}"
           if [[ $GITHUB_REF == refs/heads/main ]]; then
