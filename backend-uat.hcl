@@ -1,5 +1,5 @@
-bucket         = "ce-grp-3a-uat-s3"
+bucket         = "jt-eks-uat-s3"
 key            = "cap-eks/terraform.tfstate"
-region         = "us-east-1"
-dynamodb_table = "ce-grp-3a-uat-dynamodb"
+region         = "ap-southeast-1"
+dynamodb_table = "jt-eks-uat-dynamodb"
 encrypt        = true
