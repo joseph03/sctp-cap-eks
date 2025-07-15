@@ -1,3 +1,4 @@
+# ingress controller
 resource "helm_release" "nginx_ingress" {
   name       = "${var.grp-prefix}nginx-ingress"
   repository = "https://kubernetes.github.io/ingress-nginx"
@@ -100,6 +101,7 @@ resource "kubernetes_ingress_v1" "webapp" {
   }
 
   depends_on = [
+    helm_release.nginx_ingress,
     kubernetes_namespace.ingress_nginx,
     kubernetes_namespace.ns-app, # Use the namespace resource
   ]
@@ -242,7 +244,7 @@ resource "kubernetes_horizontal_pod_autoscaler" "webapp" {
   }
 }
 
-# matrix server is needed by autoscaler
+# metric server is needed by autoscaler
 resource "helm_release" "metrics_server" {
   name       = "metrics-server"
   repository = "https://kubernetes-sigs.github.io/metrics-server/"

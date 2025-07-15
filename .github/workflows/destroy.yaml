@@ -1,0 +1,78 @@
+name: Terraform Destroy
+
+on:
+  push:
+  #workflow_dispatch:   # 👈 Manual trigger only
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    name: Terraform Destroy All
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+    #================== Checkout ==================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+    #================== AWS Credentials ==================
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
+
+    #================== Setup Terraform ==================
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+    #================== Determine backend config ==================
+      - name: Determine Backend Config
+        id: hcl_tfvars
+        run: |
+          if [[ $GITHUB_REF_NAME == "main" ]]; then
+            echo "TFHCL_FILE=backend-prod.hcl" >> $GITHUB_OUTPUT
+            echo "TFVARS_FILE=env-prod.tfvars" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF_NAME == "uat" ]]; then
+            echo "TFHCL_FILE=backend-uat.hcl" >> $GITHUB_OUTPUT
+            echo "TFVARS_FILE=env-uat.tfvars" >> $GITHUB_OUTPUT
+          else
+            echo "TFHCL_FILE=backend-dev.hcl" >> $GITHUB_OUTPUT
+            echo "TFVARS_FILE=env-dev.tfvars" >> $GITHUB_OUTPUT
+          fi
+
+    #================== Destroy bootstrap-s3 ==================
+      - name: Terraform Init (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        run: terraform init
+
+      - name: Terraform Destroy (bootstrap-s3)
+        working-directory: ./bootstrap-s3
+        run: terraform destroy -auto-approve -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
+
+    #================== Destroy bootstrap-dynamodb ==================
+      - name: Terraform Init (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        run: terraform init
+
+      - name: Terraform Destroy (bootstrap-dynamodb)
+        working-directory: ./bootstrap-dynamodb
+        run: terraform destroy -auto-approve -var-file=../${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
+
+    #================== Destroy root infrastructure ==================
+      - name: Terraform Init (root)
+        run: terraform init -backend-config=${{ steps.hcl_tfvars.outputs.TFHCL_FILE }}
+
+      - name: Terraform Destroy (root)
+        run: terraform destroy -auto-approve -var-file=${{ steps.hcl_tfvars.outputs.TFVARS_FILE }}
+
+    #================== Optional: Clean backend files ==================
+      - name: Remove Remote State (optional)
+        run: |
+          echo "If needed, you can add aws s3 rm and dynamodb delete-item commands here"

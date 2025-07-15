@@ -80,8 +80,11 @@ jobs:
           # Determine which backend file to use based on branch
           # Note: GITHUB_REF is in the format refs/heads/branch-name
           # Current directory: /home/runner/work/sctp-cap-eks/sctp-cap-eks
-          echo "GITHUB_REF: ${GITHUB_REF}"
-          echo "GITHUB_REF_NAME: ${GITHUB_REF_NAME}"
+          # sctp-cap-eks is repo name
+          # eg. $GITHUB_REF == refs/heads/main
+          # eg. ${GITHUB_REF_NAME} == main"
+          echo "GITHUB_REF_NAME = ${GITHUB_REF_NAME}"
+          
           if [[ $GITHUB_REF == refs/heads/main ]]; then
             BACKEND_FILE="backend-prod.hcl"
             TFVARS_FILE=env-prod.tfvars
@@ -92,6 +95,9 @@ jobs:
             BACKEND_FILE="backend-dev.hcl"
             TFVARS_FILE=env-dev.tfvars
           fi
+
+          echo "Using backend file: $BACKEND_FILE"
+          echo "Using tfvars file: $TFVARS_FILE"
 
           # Verify backend file exists
           if [ ! -f "$BACKEND_FILE" ]; then
